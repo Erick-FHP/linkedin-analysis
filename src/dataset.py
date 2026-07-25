@@ -4,10 +4,6 @@ import pandas as pd
 class Dataset:
     """
     Representa un libro de Excel donde cada hoja se almacena como un DataFrame.
-
-    La clase permite cargar todas las hojas del archivo, obtener la lista de
-    hojas disponibles, acceder a un DataFrame específico y actualizar su
-    contenido durante el flujo de procesamiento.
     """
 
     def __init__(self, ruta: str) -> None:
@@ -19,9 +15,9 @@ class Dataset:
         ruta : str
             Ruta del archivo de Excel.
         """
-        self.ruta: str = ruta
+        self.ruta = ruta
 
-        # Diccionario donde:
+        # Diccionario:
         #   llave -> nombre de la hoja
         #   valor -> DataFrame correspondiente
         self.data: dict[str, pd.DataFrame] = pd.read_excel(
@@ -29,46 +25,75 @@ class Dataset:
             sheet_name=None
         )
 
-        # Lista con los nombres de las hojas del archivo.
-        self.hojas: list[str] = list(self.data.keys())
-
     def obtener_hojas(self) -> list[str]:
         """
-        Devuelve los nombres de todas las hojas del archivo.
-
-        Returns
-        -------
-        list[str]
-            Lista con los nombres de las hojas.
+        Devuelve los nombres de todas las hojas.
         """
-        return self.hojas
+        return list(self.data.keys())
 
     def obtener_df(self, hoja: str) -> pd.DataFrame | None:
         """
         Obtiene el DataFrame asociado a una hoja.
+        """
+        return self.data.get(hoja)
+
+    def agregar_df(self, hoja: str, df: pd.DataFrame) -> None:
+        """
+        Agrega una nueva hoja al conjunto de datos.
 
         Parameters
         ----------
         hoja : str
-            Nombre de la hoja.
+            Nombre de la nueva hoja.
+        df : pd.DataFrame
+            DataFrame asociado.
 
-        Returns
-        -------
-        pd.DataFrame | None
-            DataFrame correspondiente si la hoja existe;
-            en caso contrario, devuelve None.
+        Raises
+        ------
+        KeyError
+            Si la hoja ya existe.
         """
-        return self.data.get(hoja)
+        if hoja in self.data:
+            raise KeyError(f"La hoja '{hoja}' ya existe.")
+
+        self.data[hoja] = df
 
     def actualizar_df(self, hoja: str, df: pd.DataFrame) -> None:
         """
-        Reemplaza el DataFrame asociado a una hoja.
+        Actualiza el DataFrame de una hoja existente.
 
         Parameters
         ----------
         hoja : str
             Nombre de la hoja.
         df : pd.DataFrame
-            Nuevo DataFrame que sustituirá al actual.
+            Nuevo DataFrame.
+
+        Raises
+        ------
+        KeyError
+            Si la hoja no existe.
         """
+        if hoja not in self.data:
+            raise KeyError(f"La hoja '{hoja}' no existe.")
+
         self.data[hoja] = df
+
+    def eliminar_df(self, hoja: str) -> None:
+        """
+        Elimina una hoja del conjunto de datos.
+
+        Parameters
+        ----------
+        hoja : str
+            Nombre de la hoja.
+
+        Raises
+        ------
+        KeyError
+            Si la hoja no existe.
+        """
+        if hoja not in self.data:
+            raise KeyError(f"La hoja '{hoja}' no existe.")
+
+        del self.data[hoja]
